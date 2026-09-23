@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
     for (const field of ['host', 'port', 'dbName', 'username', 'password'] as const) {
       if (!body[field]) {
-        return jsonResponse({ ok: false, error: `Missing field: ${field}` }, 400)
+        return jsonResponse(req, { ok: false, error: `Missing field: ${field}` }, 400)
       }
     }
 
@@ -36,9 +36,9 @@ Deno.serve(async (req) => {
 
     try {
       await sql`select 1`
-      return jsonResponse({ ok: true })
+      return jsonResponse(req, { ok: true })
     } catch (err) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { ok: false, error: err instanceof Error ? err.message : String(err) },
         200
       )
@@ -48,6 +48,6 @@ Deno.serve(async (req) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ ok: false, error: message }, status)
+    return jsonResponse(req, { ok: false, error: message }, status)
   }
 })

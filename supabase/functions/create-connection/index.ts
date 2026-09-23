@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
     for (const field of ['name', 'host', 'port', 'dbName', 'username', 'password'] as const) {
       if (!body[field]) {
-        return jsonResponse({ error: `Missing field: ${field}` }, 400)
+        return jsonResponse(req, { error: `Missing field: ${field}` }, 400)
       }
     }
 
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     try {
       await sql`select 1`
     } catch (err) {
-      return jsonResponse(
+      return jsonResponse(req, 
         { error: `Could not connect: ${err instanceof Error ? err.message : String(err)}` },
         400
       )
@@ -69,13 +69,13 @@ Deno.serve(async (req) => {
       .single()
 
     if (error) {
-      return jsonResponse({ error: error.message }, 400)
+      return jsonResponse(req, { error: error.message }, 400)
     }
 
-    return jsonResponse({ connection: data }, 201)
+    return jsonResponse(req, { connection: data }, 201)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })

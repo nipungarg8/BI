@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const { client, user } = await requireUser(req)
     const { connectionId, structuredQuery, savedQueryId } = (await req.json()) as RunQueryBody
     if (!connectionId || !structuredQuery) {
-      return jsonResponse({ error: 'Missing connectionId or structuredQuery' }, 400)
+      return jsonResponse(req, { error: 'Missing connectionId or structuredQuery' }, 400)
     }
 
     await enforceDailyQueryCap(user.id)
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
         })
       }
 
-      return jsonResponse({
+      return jsonResponse(req, {
         rows,
         rowCount: rows.length,
         rowCapped: rows.length >= ROW_CAP,
@@ -57,6 +57,6 @@ Deno.serve(async (req) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })

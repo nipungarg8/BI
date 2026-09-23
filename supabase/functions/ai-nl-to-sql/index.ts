@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const { client } = await requireUser(req)
     const { connectionId, question } = (await req.json()) as AiNlToSqlBody
     if (!connectionId || !question) {
-      return jsonResponse({ error: 'Missing connectionId or question' }, 400)
+      return jsonResponse(req, { error: 'Missing connectionId or question' }, 400)
     }
 
     const params = await loadConnectionParams(client, connectionId)
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     // model hallucinated something that doesn't exist.
     const built = buildSelectQuery(structuredQuery, schema)
 
-    return jsonResponse({
+    return jsonResponse(req, {
       structuredQuery,
       generatedSql: built.text,
       explanation: aiResult.explanation,
@@ -58,6 +58,6 @@ Deno.serve(async (req) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })

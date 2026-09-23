@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     const { client } = await requireUser(req)
     const { connectionId, query } = (await req.json()) as AiSemanticSearchBody
     if (!connectionId || !query) {
-      return jsonResponse({ error: 'Missing connectionId or query' }, 400)
+      return jsonResponse(req, { error: 'Missing connectionId or query' }, 400)
     }
 
     const embedding = await embedText(query)
@@ -28,12 +28,12 @@ Deno.serve(async (req) => {
       match_count: 5,
     })
 
-    if (error) return jsonResponse({ error: error.message }, 400)
+    if (error) return jsonResponse(req, { error: error.message }, 400)
 
-    return jsonResponse({ matches: data })
+    return jsonResponse(req, { matches: data })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })

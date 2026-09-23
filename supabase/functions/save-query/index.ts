@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const { client, user } = await requireUser(req)
     const { connectionId, name, structuredQuery } = (await req.json()) as SaveQueryBody
     if (!connectionId || !name || !structuredQuery) {
-      return jsonResponse({ error: 'Missing connectionId, name, or structuredQuery' }, 400)
+      return jsonResponse(req, { error: 'Missing connectionId, name, or structuredQuery' }, 400)
     }
 
     const params = await loadConnectionParams(client, connectionId)
@@ -48,12 +48,12 @@ Deno.serve(async (req) => {
       .select('*')
       .single()
 
-    if (error) return jsonResponse({ error: error.message }, 400)
+    if (error) return jsonResponse(req, { error: error.message }, 400)
 
-    return jsonResponse({ savedQuery: data }, 201)
+    return jsonResponse(req, { savedQuery: data }, 201)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })

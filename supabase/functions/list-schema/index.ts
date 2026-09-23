@@ -15,19 +15,19 @@ Deno.serve(async (req) => {
   try {
     const { client } = await requireUser(req)
     const { connectionId } = (await req.json()) as ListSchemaBody
-    if (!connectionId) return jsonResponse({ error: 'Missing connectionId' }, 400)
+    if (!connectionId) return jsonResponse(req, { error: 'Missing connectionId' }, 400)
 
     const params = await loadConnectionParams(client, connectionId)
     const sql = connectCustomerDb(params)
     try {
       const schema = await introspectSchema(sql)
-      return jsonResponse({ schema })
+      return jsonResponse(req, { schema })
     } finally {
       await sql.end({ timeout: 5 })
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })

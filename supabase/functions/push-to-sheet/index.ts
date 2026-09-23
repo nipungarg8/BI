@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const { savedQueryId, accessToken, rows } = (await req.json()) as PushToSheetBody
 
     if (!savedQueryId || !accessToken || !rows) {
-      return jsonResponse({ error: 'Missing savedQueryId, accessToken, or rows' }, 400)
+      return jsonResponse(req, { error: 'Missing savedQueryId, accessToken, or rows' }, 400)
     }
 
     const { data: savedQuery, error: sqError } = await client
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       .select('name')
       .eq('id', savedQueryId)
       .single()
-    if (sqError || !savedQuery) return jsonResponse({ error: 'Saved query not found' }, 404)
+    if (sqError || !savedQuery) return jsonResponse(req, { error: 'Saved query not found' }, 404)
 
     const { data: existingLink } = await client
       .from('sheet_links')
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       })
       const created = await createRes.json()
       if (!createRes.ok) {
-        return jsonResponse({ error: created.error?.message ?? 'Failed to create sheet' }, 502)
+        return jsonResponse(req, { error: created.error?.message ?? 'Failed to create sheet' }, 502)
       }
       spreadsheetId = created.spreadsheetId
     }
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     )
     if (!updateRes.ok) {
       const updateError = await updateRes.json()
-      return jsonResponse({ error: updateError.error?.message ?? 'Failed to write sheet' }, 502)
+      return jsonResponse(req, { error: updateError.error?.message ?? 'Failed to write sheet' }, 502)
     }
 
     const now = new Date().toISOString()
@@ -93,13 +93,13 @@ Deno.serve(async (req) => {
       { onConflict: 'saved_query_id' }
     )
 
-    return jsonResponse({
+    return jsonResponse(req, {
       spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
       syncedAt: now,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const status = message === 'Not authenticated' ? 401 : 500
-    return jsonResponse({ error: message }, status)
+    return jsonResponse(req, { error: message }, status)
   }
 })
