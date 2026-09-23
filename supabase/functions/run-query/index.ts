@@ -9,6 +9,7 @@ import { enforceDailyQueryCap } from '../_shared/usageCap.ts'
 interface RunQueryBody {
   connectionId: string
   structuredQuery: StructuredQuery
+  savedQueryId?: string
 }
 
 Deno.serve(async (req) => {
@@ -17,7 +18,7 @@ Deno.serve(async (req) => {
 
   try {
     const { client, user } = await requireUser(req)
-    const { connectionId, structuredQuery } = (await req.json()) as RunQueryBody
+    const { connectionId, structuredQuery, savedQueryId } = (await req.json()) as RunQueryBody
     if (!connectionId || !structuredQuery) {
       return jsonResponse({ error: 'Missing connectionId or structuredQuery' }, 400)
     }
@@ -31,6 +32,18 @@ Deno.serve(async (req) => {
       const schema = await introspectSchema(sql)
       const built = buildSelectQuery(structuredQuery, schema)
       const rows = await sql.unsafe(built.text, built.params as never[])
+
+      // Cache the result for dashboard cards so refreshes don't have to
+      // re-run every query. Scoped to the caller's own saved_queries row
+      // via RLS on both saved_queries and query_cache.
+      if (savedQueryId) {
+        await client.from('query_cache').upsert({
+          saved_query_id: savedQueryId,
+          result: rows,
+          row_count: rows.length,
+          cached_at: new Date().toISOString(),
+        })
+      }
 
       return jsonResponse({
         rows,

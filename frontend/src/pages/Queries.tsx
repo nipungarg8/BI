@@ -31,7 +31,9 @@ export function Queries() {
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {queries.map((q) => (
           <li key={q.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-            <strong>{q.name}</strong>
+            <Link to={`/queries/${q.id}`}>
+              <strong>{q.name}</strong>
+            </Link>
             <div style={{ fontSize: 13, opacity: 0.7 }}>
               <code>{q.generated_sql}</code>
             </div>
