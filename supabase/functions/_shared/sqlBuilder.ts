@@ -39,12 +39,22 @@ const OPERATORS: Record<string, (col: string, paramIndex: () => number) => { sql
   in: (col, next) => ({ sql: `${col} = ANY($${next()})`, needsValue: true }),
 }
 
+const NUMERIC_STRING = /^-?\d+(\.\d+)?$/
+
+// AI- and form-supplied values often arrive as strings even for numeric
+// columns. Coerce numeric-looking strings so postgres.js sends them with a
+// numeric parameter type instead of text, which the extended protocol
+// requires to match integer/numeric columns.
+function coerceScalar(value: unknown): unknown {
+  return typeof value === 'string' && NUMERIC_STRING.test(value) ? Number(value) : value
+}
+
 function transformValueForOperator(operator: string, value: unknown): unknown {
   if (operator === 'contains') return `%${value}%`
   if (operator === 'beginsWith') return `${value}%`
   if (operator === 'endsWith') return `%${value}`
-  if (operator === 'in') return Array.isArray(value) ? value : [value]
-  return value
+  if (operator === 'in') return Array.isArray(value) ? value.map(coerceScalar) : [coerceScalar(value)]
+  return coerceScalar(value)
 }
 
 /**
