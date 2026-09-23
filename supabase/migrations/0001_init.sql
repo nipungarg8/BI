@@ -159,8 +159,8 @@ create policy "sheet_links_delete_own" on sheet_links
   );
 
 -- ── table_embeddings ───────────────────────────────────────────
--- 768 dims matches Gemini's text-embedding-004. Adjust if the embedding
--- model changes.
+-- 768 dims: gemini-embedding-2 output truncated via outputDimensionality.
+-- Adjust if the embedding model changes.
 create table table_embeddings (
   id uuid primary key default gen_random_uuid(),
   connection_id uuid not null references connections(id) on delete cascade,

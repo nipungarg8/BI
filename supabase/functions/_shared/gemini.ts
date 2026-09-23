@@ -4,8 +4,8 @@
 // Free-tier prompts may be used by Google to improve their models, so only
 // ever send sample/demo data through this, never real customer data.
 
-const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-2.5-flash'
-const GEMINI_EMBEDDING_MODEL = Deno.env.get('GEMINI_EMBEDDING_MODEL') ?? 'text-embedding-004'
+const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.6-flash'
+const GEMINI_EMBEDDING_MODEL = Deno.env.get('GEMINI_EMBEDDING_MODEL') ?? 'gemini-embedding-2'
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta'
 
 function apiKey(): string {
@@ -102,6 +102,8 @@ export async function embedText(text: string): Promise<number[]> {
       body: JSON.stringify({
         model: `models/${GEMINI_EMBEDDING_MODEL}`,
         content: { parts: [{ text }] },
+        // table_embeddings.embedding is vector(768); truncate via MRL to match.
+        outputDimensionality: 768,
       }),
     }
   )
