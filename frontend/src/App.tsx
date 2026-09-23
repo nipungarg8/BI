@@ -5,7 +5,9 @@ import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
 import { Connections } from './pages/Connections'
+import { ConnectionNew } from './pages/ConnectionNew'
 import { Queries } from './pages/Queries'
+import { QueryBuilderPage } from './pages/QueryBuilderPage'
 import { Dashboards } from './pages/Dashboards'
 import { AiSearch } from './pages/AiSearch'
 
@@ -23,7 +25,9 @@ function App() {
           }
         >
           <Route path="/connections" element={<Connections />} />
+          <Route path="/connections/new" element={<ConnectionNew />} />
           <Route path="/queries" element={<Queries />} />
+          <Route path="/queries/new" element={<QueryBuilderPage />} />
           <Route path="/dashboards" element={<Dashboards />} />
           <Route path="/ai-search" element={<AiSearch />} />
         </Route>
